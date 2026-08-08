@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Captcha } from "../components/Captcha";
 import { OtpModal } from "../components/OtpModal";
 import { Shield, Eye, EyeOff, Lock, Mail, User, Phone, CheckCircle, Building, Key } from "lucide-react";
 import { motion } from "framer-motion";
@@ -44,10 +43,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
   const [department, setDepartment] = useState("");
   const [designation, setDesignation] = useState("");
 
-  // CAPTCHA and Verification States
-  const [captchaId, setCaptchaId] = useState("");
-  const [captchaSolution, setCaptchaSolution] = useState("");
-  const [captchaReset, setCaptchaReset] = useState(false);
+  // Verification States
   const [mfaEmail, setMfaEmail] = useState("");
   const [mfaType, setMfaType] = useState<"email" | "mobile" | "login" | "reset">("email");
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -95,11 +91,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
 
 
 
-  // CAPTCHA Challenge Update
-  const handleCaptchaChallenge = (id: string, solution: string) => {
-    setCaptchaId(id);
-    setCaptchaSolution(solution);
-  };
 
   // Evaluate Password Strength
   const getPasswordStrength = () => {
@@ -124,17 +115,12 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
     setError("");
     setSuccess("");
 
-    if (!captchaSolution) {
-      setError("Please complete the CAPTCHA calculation.");
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch(apiEndpoint("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, captchaId, captchaSolution }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       
@@ -151,7 +137,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
         }
       } else {
         setError(data.error || "Login failed. Check inputs.");
-        setCaptchaReset(prev => !prev); // Refresh CAPTCHA on failure
       }
     } catch (e) {
       setError("Server connection failed. Is the API server running?");
@@ -173,11 +158,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
 
     if (strength.percent < 50) {
       setError("Password is too weak. Please use numbers and capitals.");
-      return;
-    }
-
-    if (!captchaSolution) {
-      setError("Please complete the CAPTCHA calculation.");
       return;
     }
 
@@ -233,8 +213,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
               mobile,
               role,
               password,
-              captchaId,
-              captchaSolution,
               details: {
                 company,
                 govIdType,
@@ -253,7 +231,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
             setSuccess("Account created successfully! You can now log in.");
           } else {
             setError(data.error || "Failed to complete account registration.");
-            setCaptchaReset(prev => !prev);
           }
         } catch (e) {
           setError("Server error during registration completion.");
@@ -557,10 +534,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
                 </div>
               </div>
 
-              <Captcha 
-                onChallenge={handleCaptchaChallenge}
-                shouldReset={captchaReset}
-              />
             </div>
 
             {error && <p className="text-xs text-rose-500 text-left font-medium">{error}</p>}
@@ -787,10 +760,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
               </div>
             </div>
 
-            <Captcha 
-              onChallenge={handleCaptchaChallenge}
-              shouldReset={captchaReset}
-            />
 
             {error && <p className="text-xs text-rose-500 text-left font-medium">{error}</p>}
             {success && <p className="text-xs text-emerald-500 text-left font-medium">{success}</p>}
