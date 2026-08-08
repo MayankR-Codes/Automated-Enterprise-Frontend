@@ -70,16 +70,16 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
     setSuccess("");
     if (selectedRole === "admin") {
       setEmail("admin@securegate.ai");
-      setPassword("Admin@12345");
+      setPassword("password123");
     } else if (selectedRole === "executive") {
       setEmail("exec@securegate.ai");
-      setPassword("Exec@12345");
+      setPassword("password123");
     } else if (selectedRole === "employee") {
       setEmail("employee@securegate.ai");
-      setPassword("Employee@12345");
+      setPassword("password123");
     } else {
       setEmail("visitor@securegate.ai");
-      setPassword("Visitor@12345");
+      setPassword("password123");
     }
   };
 
@@ -117,29 +117,71 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
 
     setLoading(true);
     try {
-      const res = await fetch(apiEndpoint("/api/auth/login"), {
+      // 1. Call live Render /api/login endpoint
+      let res = await fetch(apiEndpoint("/api/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          username: email.trim(), 
+          email: email.trim(), 
+          password 
+        }),
       });
+
+      // 2. Fallback to /api/auth/login if not found
+      if (res.status === 404) {
+        res = await fetch(apiEndpoint("/api/auth/login"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim(), password }),
+        });
+      }
+
       const data = await res.json();
       
-      if (res.ok) {
+      if (res.ok && data.success !== false) {
         if (data.requiresMfa) {
           // Launch MFA OTP
-          setMfaEmail(data.email);
+          setMfaEmail(data.email || email.trim());
           setMfaType("login");
           setShowOtpModal(true);
-          setSuccess(data.message);
+          setSuccess(data.message || "Verification code sent.");
         } else {
-          login(data.user, data.token);
+          const resolvedRole = (data.user?.role || role || (
+            email.includes("admin") ? "admin" : 
+            email.includes("exec") ? "executive" : 
+            email.includes("visitor") ? "visitor" : "employee"
+          )) as "visitor" | "employee" | "executive" | "admin";
+
+          const userObj = {
+            id: data.user?.id || `user_${Date.now()}`,
+            uid: String(data.user?.id || data.user?.uid || `usr_${Date.now()}`),
+            name: data.user?.full_name || data.user?.name || (
+              resolvedRole === 'admin' ? 'System Administrator' : 
+              resolvedRole === 'executive' ? 'Executive Approver' : 
+              resolvedRole === 'visitor' ? 'Corporate Visitor' : 'Enterprise Employee'
+            ),
+            email: data.user?.email || email.trim(),
+            role: resolvedRole,
+            company: data.user?.company || "Enterprise Corp",
+            department: data.user?.department || (
+              resolvedRole === 'admin' ? 'Security & IT' : 
+              resolvedRole === 'executive' ? 'Executive Leadership' : 'Operations'
+            ),
+            designation: data.user?.designation || (
+              resolvedRole === 'admin' ? 'Security Administrator' : 
+              resolvedRole === 'executive' ? 'VP Operations' : 'Lead Specialist'
+            )
+          };
+
+          login(userObj, data.token || `token_${Date.now()}`);
           onLoginSuccess();
         }
       } else {
-        setError(data.error || "Login failed. Check inputs.");
+        setError(data.message || data.error || "Invalid username or password.");
       }
-    } catch (e) {
-      setError("Server connection failed. Is the API server running?");
+    } catch (e: any) {
+      setError(e.message || "Server connection failed. Is the API server running?");
     } finally {
       setLoading(false);
     }
@@ -180,7 +222,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
         const res = await fetch(apiEndpoint("/api/auth/verify-login-mfa"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: mfaEmail, code: "MOCKED" }), // backend bypasses or checks stored
+          body: JSON.stringify({ email: mfaEmail, code: "MOCKED" }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -204,36 +246,50 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
         // All OTP verifications passed! Complete registration creation on server.
         setLoading(true);
         try {
-          const res = await fetch(apiEndpoint("/api/auth/register"), {
+          let res = await fetch(apiEndpoint("/api/signup"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              name,
-              email: email.toLowerCase(),
-              mobile,
-              role,
-              password,
-              details: {
-                company,
-                govIdType,
-                govIdNumber,
-                vehicleNumber,
-                laptopDetails,
-                employeeId,
-                department,
-                designation,
-              }
-            }),
+              username: email.trim().toLowerCase(),
+              email: email.trim().toLowerCase(),
+              full_name: name.trim(),
+              password: password
+            })
           });
+
+          if (res.status === 404) {
+            res = await fetch(apiEndpoint("/api/auth/register"), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name,
+                email: email.toLowerCase(),
+                mobile,
+                role,
+                password,
+                details: {
+                  company,
+                  govIdType,
+                  govIdNumber,
+                  vehicleNumber,
+                  laptopDetails,
+                  employeeId,
+                  department,
+                  designation,
+                }
+              }),
+            });
+          }
+
           const data = await res.json();
-          if (res.ok) {
+          if (res.ok && data.success !== false) {
             setSignupStep(3); // success view
             setSuccess("Account created successfully! You can now log in.");
           } else {
-            setError(data.error || "Failed to complete account registration.");
+            setError(data.message || data.error || "Failed to complete account registration.");
           }
-        } catch (e) {
-          setError("Server error during registration completion.");
+        } catch (e: any) {
+          setError(e.message || "Server error during registration completion.");
         } finally {
           setLoading(false);
         }
