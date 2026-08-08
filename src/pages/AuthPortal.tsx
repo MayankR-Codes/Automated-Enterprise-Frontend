@@ -4,6 +4,8 @@ import { Captcha } from "../components/Captcha";
 import { OtpModal } from "../components/OtpModal";
 import { Shield, Eye, EyeOff, Lock, Mail, User, Phone, CheckCircle, Building, Key } from "lucide-react";
 import { motion } from "framer-motion";
+import { apiEndpoint } from "../config/api";
+
 
 interface AuthPortalProps {
   onLoginSuccess: () => void;
@@ -129,7 +131,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(apiEndpoint("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, captchaId, captchaSolution }),
@@ -195,7 +197,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
       setError("");
       setSuccess("");
       try {
-        const res = await fetch("http://localhost:5000/api/auth/verify-login-mfa", {
+        const res = await fetch(apiEndpoint("/api/auth/verify-login-mfa"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: mfaEmail, code: "MOCKED" }), // backend bypasses or checks stored
@@ -222,7 +224,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
         // All OTP verifications passed! Complete registration creation on server.
         setLoading(true);
         try {
-          const res = await fetch("http://localhost:5000/api/auth/register", {
+          const res = await fetch(apiEndpoint("/api/auth/register"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -269,7 +271,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
     setSuccess("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/request-password-reset", {
+      const res = await fetch(apiEndpoint("/api/auth/request-password-reset"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: recoveryEmail }),
@@ -293,7 +295,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
     setSuccess("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/complete-password-reset", {
+      const res = await fetch(apiEndpoint("/api/auth/complete-password-reset"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: recoveryEmail, code: recoveryCode, newPassword }),

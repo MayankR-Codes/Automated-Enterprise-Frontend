@@ -11,6 +11,8 @@ import confetti from "canvas-confetti";
 import { HitlPendingApprovals } from "../components/HitlPendingApprovals";
 import { SupportTicketsManager } from "../components/SupportTicketsManager";
 import { FinancialLedgerManager } from "../components/FinancialLedgerManager";
+import { apiEndpoint } from "../config/api";
+
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -64,13 +66,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [reqRes, ticketRes, logRes, analyticsRes, usersRes, listsRes, configRes] = await Promise.all([
-        fetch("http://localhost:5000/api/portal/requests", { headers }),
-        fetch("http://localhost:5000/api/portal/tickets", { headers }),
-        fetch("http://localhost:5000/api/portal/audit-logs", { headers }),
-        fetch("http://localhost:5000/api/portal/analytics", { headers }),
-        fetch("http://localhost:5000/api/portal/users", { headers }),
-        fetch("http://localhost:5000/api/portal/system-lists", { headers }),
-        fetch("http://localhost:5000/api/portal/config", { headers }),
+        fetch(apiEndpoint("/api/portal/requests"), { headers }),
+        fetch(apiEndpoint("/api/portal/tickets"), { headers }),
+        fetch(apiEndpoint("/api/portal/audit-logs"), { headers }),
+        fetch(apiEndpoint("/api/portal/analytics"), { headers }),
+        fetch(apiEndpoint("/api/portal/users"), { headers }),
+        fetch(apiEndpoint("/api/portal/system-lists"), { headers }),
+        fetch(apiEndpoint("/api/portal/config"), { headers }),
       ]);
       if (reqRes.ok) setRequests(await reqRes.json());
       if (ticketRes.ok) setTickets(await ticketRes.json());
@@ -102,7 +104,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     e.preventDefault();
     setConfigSuccess("");
     try {
-      const res = await fetch("http://localhost:5000/api/portal/config", {
+      const res = await fetch(apiEndpoint("/api/portal/config"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ riskThreshold: Number(riskThreshold), autoEscalateHighRisk: autoEscalate, mfaEnabled }),
@@ -114,7 +116,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const handleAddBlacklist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBannedName.trim()) return;
-    await fetch("http://localhost:5000/api/portal/blacklist", {
+    await fetch(apiEndpoint("/api/portal/blacklist"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: newBannedName, idNumber: newBannedId, action: "add" }),
@@ -123,7 +125,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleRemoveBlacklist = async (name: string) => {
-    await fetch("http://localhost:5000/api/portal/blacklist", {
+    await fetch(apiEndpoint("/api/portal/blacklist"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name, action: "remove" }),
@@ -134,7 +136,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const handleAddWhitelist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWhitelisted.trim()) return;
-    await fetch("http://localhost:5000/api/portal/whitelist", {
+    await fetch(apiEndpoint("/api/portal/whitelist"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ entry: newWhitelisted, action: "add" }),
@@ -143,7 +145,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleRemoveWhitelist = async (entry: string) => {
-    await fetch("http://localhost:5000/api/portal/whitelist", {
+    await fetch(apiEndpoint("/api/portal/whitelist"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ entry, action: "remove" }),
@@ -153,7 +155,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   const handleAdminOverride = async (requestId: string, approved: boolean) => {
     setOverrideLoading(true);
-    await fetch("http://localhost:5000/api/portal/update-approval", {
+    await fetch(apiEndpoint("/api/portal/update-approval"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ requestId, approved, notes: overrideNote || "Admin override.", role: "admin" }),
@@ -166,7 +168,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleResolveTicket = async (id: string, status: string) => {
-    await fetch(`http://localhost:5000/api/portal/tickets/${id}/resolve`, {
+    await fetch(apiEndpoint(`/api/portal/tickets/${id}/resolve`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ status }),
@@ -175,7 +177,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const handleUserUpdate = async (uid: string, updates: object) => {
-    await fetch(`http://localhost:5000/api/portal/users/${uid}`, {
+    await fetch(apiEndpoint(`/api/portal/users/${uid}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(updates),

@@ -11,6 +11,8 @@ import confetti from "canvas-confetti";
 import { HitlPendingApprovals } from "../components/HitlPendingApprovals";
 import { SupportTicketsManager } from "../components/SupportTicketsManager";
 import { FinancialLedgerManager } from "../components/FinancialLedgerManager";
+import { apiEndpoint } from "../config/api";
+
 
 interface ExecutiveDashboardProps {
   onLogout: () => void;
@@ -35,8 +37,8 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onLogout
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [reqRes, ticketRes, insightData] = await Promise.all([
-        fetch("http://localhost:5000/api/portal/requests", { headers }),
-        fetch("http://localhost:5000/api/portal/tickets", { headers }),
+        fetch(apiEndpoint("/api/portal/requests"), { headers }),
+        fetch(apiEndpoint("/api/portal/tickets"), { headers }),
         mlApi.fetchCompanyInsights()
       ]);
       

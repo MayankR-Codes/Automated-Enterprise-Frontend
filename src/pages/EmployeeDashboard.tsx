@@ -11,6 +11,8 @@ import confetti from "canvas-confetti";
 import { AiChatCopilot } from "../components/AiChatCopilot";
 import { SupportTicketsManager } from "../components/SupportTicketsManager";
 import { FinancialLedgerManager } from "../components/FinancialLedgerManager";
+import { apiEndpoint } from "../config/api";
+
 
 interface EmployeeDashboardProps {
   onLogout: () => void;
@@ -47,7 +49,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }
 
   const fetchHostVisits = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/portal/requests", {
+      const res = await fetch(apiEndpoint("/api/portal/requests"), {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

@@ -5,6 +5,8 @@ import {
   MapPin, LogOut, LayoutDashboard, UserCheck, ShieldAlert
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { apiEndpoint } from "../config/api";
+
 
 interface SecurityDashboardProps {
   onLogout: () => void;
@@ -35,7 +37,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ onLogout }
     try {
       // In demo mode, if they type the mock token, we retrieve the active requests list
       // and match req-sample-1, or decode it directly by calling check-in endpoint
-      const res = await fetch("http://localhost:5000/api/portal/gate-check-in", {
+      const res = await fetch(apiEndpoint("/api/portal/gate-check-in"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +67,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ onLogout }
     setError("");
     setSuccess("");
     try {
-      const res = await fetch("http://localhost:5000/api/portal/gate-check-out", {
+      const res = await fetch(apiEndpoint("/api/portal/gate-check-out"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,7 +95,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ onLogout }
       const nextLockdown = !lockdown;
       setLockdown(nextLockdown);
       
-      await fetch("http://localhost:5000/api/portal/emergency", {
+      await fetch(apiEndpoint("/api/portal/emergency"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,9 +1,10 @@
-export type Role = 'visitor' | 'employee' | 'admin' | 'executive';
+export type Role = 'visitor' | 'employee' | 'admin' | 'executive' | 'security';
 
 export type ImportanceLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 
 export interface User {
-  id: string;
+  id?: string | number;
+  uid?: string;
   name: string;
   email: string;
   role: Role;
@@ -12,7 +13,30 @@ export interface User {
   department?: string;
   designation?: string;
   branch?: string;
+  details?: {
+    company?: string;
+    govIdType?: string;
+    govIdNumber?: string;
+    vehicleNumber?: string;
+    laptopDetails?: string;
+    employeeId?: string;
+    department?: string;
+    designation?: string;
+    photoUrl?: string;
+    govIdUrl?: string;
+  };
 }
+
+export interface DemoNotification {
+  id: string;
+  requestId?: string;
+  recipientEmail: string;
+  channel: "email" | "sms" | "whatsapp" | "push";
+  title: string;
+  message: string;
+  timestamp: string;
+}
+
 
 export interface AIAnalysisResult {
   importance: ImportanceLevel;

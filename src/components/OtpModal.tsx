@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, ShieldCheck, Mail, Phone, Clock } from "lucide-react";
+import { apiEndpoint } from "../config/api";
 
 interface OtpModalProps {
   email: string;
@@ -22,7 +23,7 @@ export const OtpModal: React.FC<OtpModalProps> = ({ email, type, onVerified, onC
     setSuccessMsg("");
     setTimer(60);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/send-otp", {
+      const res = await fetch(apiEndpoint("/api/auth/send-otp"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, type }),
@@ -63,7 +64,7 @@ export const OtpModal: React.FC<OtpModalProps> = ({ email, type, onVerified, onC
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+      const res = await fetch(apiEndpoint("/api/auth/verify-otp"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, type, code }),

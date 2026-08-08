@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
+import { apiEndpoint } from "../config/api";
+
 
 interface VisitorDashboardProps {
   onLogout: () => void;
@@ -61,7 +63,7 @@ export const VisitorDashboard: React.FC<VisitorDashboardProps> = ({ onLogout }) 
   // Fetch visitor requests
   const fetchRequests = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/portal/requests", {
+      const res = await fetch(apiEndpoint("/api/portal/requests"), {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -77,7 +79,7 @@ export const VisitorDashboard: React.FC<VisitorDashboardProps> = ({ onLogout }) 
   // Fetch host employees list for select dropdown
   const fetchEmployees = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/portal/users", {
+      const res = await fetch(apiEndpoint("/api/portal/users"), {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -157,7 +159,7 @@ export const VisitorDashboard: React.FC<VisitorDashboardProps> = ({ onLogout }) 
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/portal/book", {
+      const res = await fetch(apiEndpoint("/api/portal/book"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -275,7 +277,7 @@ export const VisitorDashboard: React.FC<VisitorDashboardProps> = ({ onLogout }) 
     setChatInput("");
     setChatLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/portal/chat", {
+      const res = await fetch(apiEndpoint("/api/portal/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg, role: user?.role, userId: user?.uid })

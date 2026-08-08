@@ -8,8 +8,11 @@ import {
   TicketAuditEntry
 } from '../types';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_FLASK_API_URL || 'http://localhost:5000/api';
+import { ML_API_URL } from '../config/api';
+
+const API_BASE_URL = ML_API_URL.endsWith('/api') ? ML_API_URL : `${ML_API_URL.replace(/\/+$/, '')}/api`;
 const ML_API_BASE_URL = `${API_BASE_URL}/ml`;
+
 
 /**
  * Fallback local ML heuristic rules engine when Flask REST API server is offline

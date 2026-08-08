@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { RefreshCw, TerminalSquare } from "lucide-react";
 import { motion } from "framer-motion";
+import { apiEndpoint } from "../config/api";
 
 interface CaptchaProps {
   onChallenge: (captchaId: string, solution: string) => void;
@@ -32,7 +33,7 @@ export const Captcha: React.FC<CaptchaProps> = ({ onChallenge, shouldReset }) =>
   const fetchCaptcha = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/captcha");
+      const res = await fetch(apiEndpoint("/api/auth/captcha"));
       if (res.ok) {
         const data = await res.json();
         setCaptchaId(data.captchaId);

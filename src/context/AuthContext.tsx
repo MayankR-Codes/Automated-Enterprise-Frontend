@@ -1,35 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-export interface User {
-  uid: string;
-  id?: string;
-  name: string;
-  email: string;
-  mobile: string;
-  role: "visitor" | "employee" | "executive" | "admin";
-  details?: {
-    company?: string;
-    govIdType?: string;
-    govIdNumber?: string;
-    vehicleNumber?: string;
-    laptopDetails?: string;
-    employeeId?: string;
-    department?: string;
-    designation?: string;
-    photoUrl?: string;
-    govIdUrl?: string;
-  };
-}
-
-export interface DemoNotification {
-  id: string;
-  requestId?: string;
-  recipientEmail: string;
-  channel: "email" | "sms" | "whatsapp" | "push";
-  title: string;
-  message: string;
-  timestamp: string;
-}
+import { User, DemoNotification } from "../types";
+import { apiEndpoint } from "../config/api";
 
 interface AuthContextType {
   user: User | null;
@@ -50,15 +21,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [notifications, setNotifications] = useState<DemoNotification[]>([]);
 
-  // Load user/token/theme from localStorage on mount
+  // Initialize from LocalStorage
   useEffect(() => {
     const savedToken = localStorage.getItem("sg_token");
     const savedUser = localStorage.getItem("sg_user");
     const savedTheme = localStorage.getItem("sg_theme") as "light" | "dark" | null;
 
     if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem("sg_user");
+      }
     }
 
     const initialTheme = savedTheme || "dark";
@@ -74,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const poll = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/notifications");
+        const res = await fetch(apiEndpoint("/api/notifications"));
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
@@ -124,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearNotifications = async () => {
     try {
-      await fetch("http://localhost:5000/api/notifications/clear", { method: "POST" });
+      await fetch(apiEndpoint("/api/notifications/clear"), { method: "POST" });
       setNotifications([]);
     } catch (e) {
       setNotifications([]);
@@ -141,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         toggleTheme,
-        clearNotifications
+        clearNotifications,
       }}
     >
       {children}
@@ -151,6 +126,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used inside AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
 };
